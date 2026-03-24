@@ -2,8 +2,12 @@
 
 ## 1. System Design
 
-- Core action 1: A user can add a pet profile with details like name, species, age, and care preferences.
-- Core action 2: A user can schedule a walk or care activity by selecting a date, time, and pet.
+- Core action 1: A user can create a pet-owner profile and add one or more
+  pets with details like name, species, age, and care preferences.
+
+- Core action 2: A user can schedule walks or care activities by selecting a
+  date, time, and pet.
+
 - Core action 3: A user can view today's tasks in one place to see what needs to be done and when.
 
 **a. Initial design**
