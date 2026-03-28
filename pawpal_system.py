@@ -1,10 +1,10 @@
 """
 PawPal+ — Smart Pet Care Management System
-Phase 2, Step 1: Full class implementation
+Phase 4: Full implementation with sorting, filtering, recurring tasks, and conflict detection
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Literal
 
 
@@ -26,9 +26,28 @@ class Task:
     frequency: Frequency
     is_completed: bool = False
 
-    def mark_complete(self) -> None:
-        """Mark this task as completed."""
+    def mark_complete(self, target_date: date | None = None) -> "Task | None":
+        """Mark this task as completed.
+
+        For recurring tasks, returns the next scheduled instance.
+        For once tasks, marks as complete and returns None.
+        """
         self.is_completed = True
+
+        if self.frequency == "once":
+            return None
+
+        if target_date is None:
+            target_date = self.time.date()
+
+        if self.frequency == "daily":
+            next_date = target_date + timedelta(days=1)
+        elif self.frequency == "weekly":
+            next_date = target_date + timedelta(weeks=1)
+        else:
+            return None
+
+        return self.clone_for_date(next_date)
 
     def clone_for_date(self, target_date: date) -> "Task":
         """Return a copy of this task scheduled on the target date."""
@@ -112,16 +131,26 @@ class Scheduler:
         """Detect overlapping tasks and return conflict descriptions."""
         conflicts: list[str] = []
         tasks = self.sort_by_time()
-        for i in range(len(tasks) - 1):
-            current = tasks[i]
-            nxt = tasks[i + 1]
-            current_end = current.time.timestamp() + (current.duration_minutes * 60)
-            if current_end > nxt.time.timestamp():
+        for current, nxt in zip(tasks, tasks[1:]):
+            current_end = current.time + timedelta(minutes=current.duration_minutes)
+            if current_end > nxt.time:
                 conflicts.append(
                     f"Conflict: '{current.description}' overlaps with "
                     f"'{nxt.description}' at {nxt.time.strftime('%H:%M')}"
                 )
         return conflicts
+
+    def filter_tasks(self, pet_name: str | None = None, is_completed: bool | None = None) -> list[Task]:
+        """Filter tasks by pet name and/or completion status."""
+        filtered: list[Task] = []
+        for pet in self.owner.pets:
+            if pet_name is not None and pet.name != pet_name:
+                continue
+            for task in pet.tasks:
+                if is_completed is not None and task.is_completed != is_completed:
+                    continue
+                filtered.append(task)
+        return filtered
 
     def handle_recurring_tasks(self, target_date: date) -> list[Task]:
         """Build the list of tasks that should occur on the target date."""

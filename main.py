@@ -96,4 +96,32 @@ if conflicts:
     print("Conflicts detected:")
     for c in conflicts:
         print(f"  {c}")
+
+# ---------------------------------------------------------------------------
+# Filter tasks — by pet name and completion status
+# ---------------------------------------------------------------------------
+
+print()
+print("--- Filter: Max's tasks only ---")
+for t in scheduler.filter_tasks(pet_name="Max"):
+    print(f"  {t}")
+
+print()
+print("--- Filter: pending tasks only ---")
+for t in scheduler.filter_tasks(is_completed=False):
+    print(f"  {t}")
+
+# ---------------------------------------------------------------------------
+# Recurring task next-occurrence — mark complete and get next instance
+# ---------------------------------------------------------------------------
+
+print()
+print("--- Recurring task: mark complete and get next occurrence ---")
+walk = max_.tasks[0]
+print(f"  Before: {walk}")
+next_task = walk.mark_complete(today)
+print(f"  After:  {walk}")
+if next_task:
+    print(f"  Next:   {next_task}")
+
 print("=" * 50)

@@ -30,9 +30,8 @@ Also, during the review process, Copilot was asked to review the skeleton twice.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
-
+The conflict detector checks adjacent tasks after sorting by time, which means it only catches overlaps between consecutive tasks. If three tasks overlap simultaneously, it reports the first two pairs but may miss non-adjacent combinations. This tradeoff keeps the logic simple and linear (O(n)) but would need revision if the app 
+needed to handle dense, multi-pet schedules. The method also uses timedelta arithmetic rather than timestamp math, which improves readability at no performance cost.
 ---
 
 ## 3. AI Collaboration
