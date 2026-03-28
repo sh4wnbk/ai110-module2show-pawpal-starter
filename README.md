@@ -42,14 +42,15 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
-## Smarter Scheduling
+## Features
 
-PawPal+ includes lightweight scheduling intelligence built into the `Scheduler` class:
-
-- **Sorting**: tasks are ordered by time, with priority used to break ties.
-- **Filtering**: tasks can be filtered by pet name or completion status.
-- **Recurring tasks**: daily and weekly tasks are automatically generated for a target date; completing a recurring task returns the next scheduled instance.
-- **Conflict detection**: overlapping tasks are detected by comparing each task's end time against the next task's start time.
+- **Time-based scheduling with priority tie-breaks**: tasks are ordered chronologically, and priority is used when tasks share the same time.
+- **Rule-based recurring task generation**: recurring tasks are produced for a target date (`once`, `daily`, `weekly`) based on date and weekday rules.
+- **Conflict detection for overlaps**: task collisions are detected by comparing each task's end time to the next task's start time.
+- **Flexible task filtering**: task lists can be filtered by pet name and completion status.
+- **Recurring completion workflow**: marking recurring tasks complete can generate the next scheduled instance.
+- **Pending-task extraction**: pets can return only incomplete tasks for focused daily planning.
+- **Plan explanation metrics**: the scheduler summarizes plan construction, including total, high-priority, recurring, pending, and conflict counts.
 
 ## Testing PawPal+
 
@@ -67,4 +68,21 @@ The suite covers:
 - Chronological sort order
 - Recurring task next-occurrence generation
 
-Confidence level: ⭐⭐⭐⭐ (4/5) — core scheduling behaviors are verified; edge cases like empty pet lists and same-time tasks across multiple pets could use additional coverage.
+**Confidence level: ⭐⭐⭐⭐ (4/5)**
+
+The core scheduling behaviors are verified across 8 tests covering task completion, sorting, conflict detection, recurring task generation, and pending filtering.
+
+A **Confidence level: ⭐⭐⭐⭐⭐ (5/5)** would require coverage of edge cases that are currently untested:
+
+- An owner with no pets, or a pet with no tasks
+- Weekly tasks being correctly excluded on non-matching weekdays
+- Conflict behavior when tasks from different pets overlap at the same time
+
+These gaps do not affect normal use of the app but represent scenarios where the system's behavior is assumed rather than verified.
+
+## 📸 Demo
+
+![PawPal App](pawpal_1.PNG)
+![PawPal App](pawpal_2.PNG)
+![PawPal App](pawpal_3.PNG)
+![PawPal App](pawpal_4.PNG)
