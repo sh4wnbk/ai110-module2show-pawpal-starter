@@ -9,9 +9,19 @@ st.title("🐾 PawPal+")
 # Session state
 # ---------------------------------------------------------------------------
 
-for key in ("owner", "pet", "saved"):
+for key in ("owner", "pet", "saved", "json_saved"):
     if key not in st.session_state:
         st.session_state[key] = None
+
+
+# Load data from data.json on app startup if it exists
+if st.session_state.owner is None:
+    loaded_owner = Owner.load_from_json("data.json")
+    if loaded_owner is not None:
+        st.session_state.owner = loaded_owner
+        if loaded_owner.pets:
+            st.session_state.pet = loaded_owner.pets[0]
+            st.session_state.saved = True
 
 # ---------------------------------------------------------------------------
 # Owner & Pet setup
@@ -47,6 +57,9 @@ if st.session_state.saved:
         f"Pet: **{st.session_state.pet.name}** ({st.session_state.pet.species})"
     )
 
+if st.session_state.json_saved:
+    st.info("Profile saved to data.json — data will persist across sessions.")
+
 st.divider()
 
 # ---------------------------------------------------------------------------
@@ -81,7 +94,8 @@ if st.button("Add task"):
             frequency=frequency,
         )
         st.session_state.pet.add_task(task)
-        st.success(f"Added: **{task_title}** at {task_time.strftime('%H:%M')}")
+        st.session_state.owner.save_to_json("data.json")
+        st.success(f"Added: **{task_title}** at {task_time.strftime("%I:%M %p")}")
 
 # Task list with filter
 if st.session_state.pet and st.session_state.pet.tasks:
@@ -102,9 +116,9 @@ if st.session_state.pet and st.session_state.pet.tasks:
             [
                 {
                     "Task": t.description,
-                    "Time": t.time.strftime("%H:%M"),
+                    "Time": t.time.strftime("%I:%M %p"),
                     "Duration (min)": t.duration_minutes,
-                    "Priority": t.priority,
+                    "Priority": {"high": "🔴 high", "medium": "🟡 medium", "low": "🟢 low"}.get(t.priority, t.priority),
                     "Frequency": t.frequency,
                     "Status": "✓ done" if t.is_completed else "⏳ pending",
                 }
@@ -119,6 +133,37 @@ else:
     st.info("No tasks yet. Add one above.")
 
 st.divider()
+
+
+st.divider()
+
+# ---------------------------------------------------------------------------
+# Find next available slot
+# ---------------------------------------------------------------------------
+
+st.subheader("Find Next Available Slot")
+
+slot_duration = st.number_input(
+    "Task duration to fit (minutes)", min_value=1, max_value=720, value=30
+)
+slot_date = st.date_input("Date to search", value=date.today(), key="slot_date")
+
+if st.button("Find slot"):
+    if st.session_state.owner is None:
+        st.warning("Save an owner and pet first.")
+    else:
+        scheduler = Scheduler(st.session_state.owner)
+        slot = scheduler.find_next_slot(int(slot_duration), slot_date)
+        if slot:
+            st.success(
+                f"Next available slot: **{slot.strftime('%I:%M %p')}** "
+                f"on {slot_date.strftime('%A, %B %d')}"
+            )
+        else:
+            st.warning(
+                f"No available slot found for {int(slot_duration)} minutes "
+                f"between 8:00 AM and 8:00 PM."
+            )
 
 # ---------------------------------------------------------------------------
 # Generate schedule
@@ -144,10 +189,10 @@ if st.button("Generate schedule"):
             st.dataframe(
                 [
                     {
-                        "Time": t.time.strftime("%H:%M"),
+                        "Time": t.time.strftime("%I:%M %p"),
                         "Task": t.description,
                         "Duration (min)": t.duration_minutes,
-                        "Priority": t.priority,
+                        "Priority": {"high": "🔴 high", "medium": "🟡 medium", "low": "🟢 low"}.get(t.priority, t.priority),
                         "Frequency": t.frequency,
                         "Status": "✓ done" if t.is_completed else "⏳ pending",
                     }

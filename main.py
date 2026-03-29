@@ -41,7 +41,7 @@ today = date.today()
 
 max_.add_task(Task(
     description="Morning walk",
-    time=datetime.combine(today, datetime.strptime("08:00", "%H:%M").time()),
+    time=datetime.combine(today, datetime.strptime("08:00", "%I:%M %p").time()),
     duration_minutes=30,
     priority="high",
     frequency="daily",
@@ -49,7 +49,7 @@ max_.add_task(Task(
 
 max_.add_task(Task(
     description="Evening walk",
-    time=datetime.combine(today, datetime.strptime("17:30", "%H:%M").time()),
+    time=datetime.combine(today, datetime.strptime("17:30", "%I:%M %p").time()),
     duration_minutes=30,
     priority="medium",
     frequency="daily",
@@ -57,7 +57,7 @@ max_.add_task(Task(
 
 max_.add_task(Task(
     description="Grooming session",
-    time=datetime.combine(today, datetime.strptime("10:00", "%H:%M").time()),
+    time=datetime.combine(today, datetime.strptime("10:00", "%I:%M %p").time()),
     duration_minutes=45,
     priority="low",
     frequency="weekly",
@@ -65,7 +65,7 @@ max_.add_task(Task(
 
 luna.add_task(Task(
     description="Thyroid medication",
-    time=datetime.combine(today, datetime.strptime("08:15", "%H:%M").time()),
+    time=datetime.combine(today, datetime.strptime("08:15", "%I:%M %p").time()),
     duration_minutes=5,
     priority="high",
     frequency="daily",
@@ -73,7 +73,7 @@ luna.add_task(Task(
 
 luna.add_task(Task(
     description="Feeding",
-    time=datetime.combine(today, datetime.strptime("08:00", "%H:%M").time()),
+    time=datetime.combine(today, datetime.strptime("08:00", "%I:%M %p").time()),
     duration_minutes=10,
     priority="medium",
     frequency="daily",

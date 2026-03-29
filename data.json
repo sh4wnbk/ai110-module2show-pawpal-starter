@@ -1,0 +1,63 @@
+{
+  "name": "Shawn",
+  "pets": [
+    {
+      "name": "Mochi",
+      "species": "dog",
+      "age": 0,
+      "energy_level": "medium",
+      "medical_notes": "none",
+      "care_preferences": "none",
+      "tasks": [
+        {
+          "description": "Morning walk",
+          "time": "2026-03-28T08:00:00",
+          "duration_minutes": 20,
+          "priority": "high",
+          "frequency": "once",
+          "is_completed": false
+        },
+        {
+          "description": "Morning walk",
+          "time": "2026-03-28T08:45:00",
+          "duration_minutes": 20,
+          "priority": "medium",
+          "frequency": "once",
+          "is_completed": false
+        },
+        {
+          "description": "Morning walk",
+          "time": "2026-03-28T09:15:00",
+          "duration_minutes": 20,
+          "priority": "low",
+          "frequency": "weekly",
+          "is_completed": false
+        },
+        {
+          "description": "Morning walk",
+          "time": "2026-03-28T08:00:00",
+          "duration_minutes": 20,
+          "priority": "high",
+          "frequency": "once",
+          "is_completed": false
+        },
+        {
+          "description": "Morning walk",
+          "time": "2026-03-28T15:15:00",
+          "duration_minutes": 29,
+          "priority": "medium",
+          "frequency": "once",
+          "is_completed": false
+        },
+        {
+          "description": "Evening walk",
+          "time": "2026-03-28T09:30:00",
+          "duration_minutes": 18,
+          "priority": "medium",
+          "frequency": "once",
+          "is_completed": false
+        }
+      ]
+    }
+  ]
+}

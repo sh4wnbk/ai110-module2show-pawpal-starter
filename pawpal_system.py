@@ -6,6 +6,8 @@ Phase 4: Full implementation with sorting, filtering, recurring tasks, and confl
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Literal
+import json
+import os
 
 
 Priority    = Literal["low", "medium", "high"]
@@ -64,8 +66,31 @@ class Task:
         """Return a human-readable summary of the task."""
         status = "done" if self.is_completed else "pending"
         return (
-            f"{self.time.strftime('%H:%M')} - {self.description} "
+            f"{self.time.strftime("%I:%M %p")} - {self.description} "
             f"({self.duration_minutes}m, {self.priority}, {self.frequency}, {status})"
+        )
+
+    def to_dict(self) -> dict:
+        """Convert Task to a dictionary for JSON serialization."""
+        return {
+            "description": self.description,
+            "time": self.time.isoformat(),
+            "duration_minutes": self.duration_minutes,
+            "priority": self.priority,
+            "frequency": self.frequency,
+            "is_completed": self.is_completed,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Task":
+        """Reconstruct a Task from a dictionary."""
+        return cls(
+            description=data["description"],
+            time=datetime.fromisoformat(data["time"]),
+            duration_minutes=data["duration_minutes"],
+            priority=data["priority"],
+            frequency=data["frequency"],
+            is_completed=data.get("is_completed", False),
         )
 
 
@@ -91,6 +116,32 @@ class Pet:
         """Return all tasks for this pet that are not completed."""
         return [t for t in self.tasks if not t.is_completed]
 
+    def to_dict(self) -> dict:
+        """Convert Pet to a dictionary for JSON serialization."""
+        return {
+            "name": self.name,
+            "species": self.species,
+            "age": self.age,
+            "energy_level": self.energy_level,
+            "medical_notes": self.medical_notes,
+            "care_preferences": self.care_preferences,
+            "tasks": [task.to_dict() for task in self.tasks],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Pet":
+        """Reconstruct a Pet from a dictionary."""
+        pet = cls(
+            name=data["name"],
+            species=data["species"],
+            age=data["age"],
+            energy_level=data["energy_level"],
+            medical_notes=data["medical_notes"],
+            care_preferences=data["care_preferences"],
+        )
+        pet.tasks = [Task.from_dict(task_data) for task_data in data.get("tasks", [])]
+        return pet
+
 
 # ---------------------------------------------------------------------------
 # Owner
@@ -112,6 +163,38 @@ class Owner:
         for pet in self.pets:
             all_tasks.extend(pet.tasks)
         return all_tasks
+
+    def to_dict(self) -> dict:
+        """Convert Owner to a dictionary for JSON serialization."""
+        return {
+            "name": self.name,
+            "pets": [pet.to_dict() for pet in self.pets],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Owner":
+        """Reconstruct an Owner from a dictionary."""
+        owner = cls(name=data["name"])
+        owner.pets = [Pet.from_dict(pet_data) for pet_data in data.get("pets", [])]
+        return owner
+
+    def save_to_json(self, filepath: str = "data.json") -> None:
+        """Serialize the Owner object (including all pets and tasks) to a JSON file."""
+        with open(filepath, "w") as f:
+            json.dump(self.to_dict(), f, indent=2)
+
+    @classmethod
+    def load_from_json(cls, filepath: str = "data.json") -> "Owner | None":
+        """Reconstruct an Owner object from JSON file. Returns None if file doesn't exist."""
+        if not os.path.exists(filepath):
+            return None
+        try:
+            with open(filepath, "r") as f:
+                data = json.load(f)
+            return cls.from_dict(data)
+        except (json.JSONDecodeError, KeyError, IOError) as e:
+            print(f"Error loading data from {filepath}: {e}")
+            return None
 
 
 # ---------------------------------------------------------------------------
@@ -136,7 +219,7 @@ class Scheduler:
             if current_end > nxt.time:
                 conflicts.append(
                     f"Conflict: '{current.description}' overlaps with "
-                    f"'{nxt.description}' at {nxt.time.strftime('%H:%M')}"
+                    f"'{nxt.description}' at {nxt.time.strftime("%I:%M %p")}"
                 )
         return conflicts
 
@@ -165,6 +248,39 @@ class Scheduler:
                 if task.time.weekday() == target_date.weekday():
                     scheduled.append(task.clone_for_date(target_date))
         return scheduled
+
+    def find_next_slot(self, duration_minutes: int, target_date: date) -> datetime | None:
+        """Return the earliest available slot in the 08:00-20:00 window for target_date."""
+        window_start = datetime.combine(target_date, datetime.min.time()).replace(hour=8)
+        window_end = datetime.combine(target_date, datetime.min.time()).replace(hour=20)
+
+        tasks = sorted(self.handle_recurring_tasks(target_date), key=lambda t: t.time)
+
+        current_start = window_start
+        for task in tasks:
+            task_start = task.time
+            task_end = task_start + timedelta(minutes=task.duration_minutes)
+
+            if task_end <= window_start or task_start >= window_end:
+                continue
+
+            if task_start < window_start:
+                task_start = window_start
+            if task_end > window_end:
+                task_end = window_end
+
+            gap_minutes = (task_start - current_start).total_seconds() / 60
+            if gap_minutes >= duration_minutes:
+                return current_start
+
+            if task_end > current_start:
+                current_start = task_end
+
+        end_gap_minutes = (window_end - current_start).total_seconds() / 60
+        if end_gap_minutes >= duration_minutes:
+            return current_start
+
+        return None
 
     def show_daily_plan(self, target_date: date) -> str:
         """Return a formatted daily plan for the given date."""
