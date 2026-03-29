@@ -75,3 +75,20 @@ The main thing to redesign would be how pet context is preserved when the Schedu
 **c. Key takeaway**
 
 The most important thing learned was that being the lead architect means owning every decision, including the ones AI makes on your behalf. AI tools generate output quickly and confidently, but confidence is not the same as correctness, and speed is not the same as good design. The skill is not in prompting AI to produce something — it is in evaluating what it produces, knowing what to keep, what to change, and what to reject entirely.
+
+---
+
+## 6. Multi-Model Prompt Comparison
+
+To evaluate how different AI models approach the same scheduling problem, I asked three tools to implement the recurring task rescheduling logic — specifically, the behavior where marking a daily or weekly task complete returns the next scheduled instance.
+
+**GitHub Copilot** generated a working implementation but included dead code in the daily frequency branch — it wrote an initial approach using date.replace(), then overwrote it with the correct timedelta approach without removing the first attempt. It also placed timedelta imports inside the method body rather than at the top of the file. The logic was correct 
+but the code required cleanup before committing.
+
+**Claude** produced a cleaner version with timedelta imported at the top level and no dead code, but initially used pass stubs instead of 
+raise NotImplementedError, which would have failed silently rather than loudly. It also added the owner: Owner attribute to Scheduler that Copilot missed when generating the skeleton without UML context.
+
+**Gemini** (used in Phase 1 for the initial class blueprint) produced a reasonable structure but was missing duration_minutes and priority from the Task class entirely, requiring manual correction before the design could proceed.
+
+**Takeaway:** Copilot was the most effective tool for in-editor, file-aware tasks — it could read the project files and generate 
+contextually accurate code. Claude was more useful for design decisions, evaluation, and catching logical gaps that required reasoning across the whole system. Gemini was useful for initial brainstorming but required the most correction. No single tool was sufficient on its own — the best results came from using each where it was strongest and critically evaluating every output before accepting it.
